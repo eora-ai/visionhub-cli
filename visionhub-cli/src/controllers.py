@@ -4,6 +4,7 @@ Controllers for visionhub-cli. Main bussines logic
 
 from pathlib import Path
 
+import requests
 import click
 
 from .config_processor import (
@@ -11,6 +12,20 @@ from .config_processor import (
     write_config,
     Field,
 )
+
+def login(token: str, address: str):
+    """
+    Check token, save to ~/.visionhub/tokens
+    """
+
+    resp = requests.get(address + "/api/frontend/user/", headers={"Authorization": "Token " + token})
+    if not resp.ok:
+        raise ValueError("Token is incorrect")
+
+    # save token
+    Path(".visionhub").mkdir(exist_ok=True)
+    with open(".visionhub/token", "w") as f:
+        f.write(f"{address},{token}")
 
 
 def create(result_config_path: Path):
@@ -36,3 +51,5 @@ def create(result_config_path: Path):
         fields += [Field.parse_string(field_template, value)]
 
     write_config(result_config_path, fields)
+
+
