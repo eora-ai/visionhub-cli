@@ -2,8 +2,11 @@
 Entrypoint of visionhub-cli
 """
 from typing import Optional
+from pathlib import Path
 
 import click
+
+import src.controllers as controllers
 
 VERSION = "0.0.1"
 
@@ -27,12 +30,12 @@ def login(token: Optional[str]):
 
 
 @main.command()
-@click.argument("directory", required=False, default=".")
 @click.argument("config_file", required=False, default="visionhub-model.yaml")
-def create(directory: Optional[str], config_file: Optional[str]):
+def create(config_file: str):
     """
     Make configuration file for release
     """
+    controllers.create(Path(config_file))
 
 
 @main.command()
