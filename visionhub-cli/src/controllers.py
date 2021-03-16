@@ -3,6 +3,7 @@ Controllers for visionhub-cli. Main bussines logic
 """
 
 from pathlib import Path
+import os
 
 import requests
 import docker
@@ -29,7 +30,7 @@ def login(token: str, address: str):
 
     # save token
     Path(".visionhub").mkdir(exist_ok=True)
-    with open(".visionhub/token", "w") as f:
+    with open(f".visionhub/{address.split('://')[1]}", "w") as f:
         f.write(f"{address},{token}")
 
 
@@ -52,6 +53,9 @@ def create(result_config_path: Path):
                 if field_template.default is not None
                 else "",
             )
+
+        if value == "":
+            continue
 
         fields += [Field.parse_string(field_template, value)]
 
@@ -96,3 +100,52 @@ def push(config_path: Path):
     click.echo("Pushing...")
     cli.images.push(repository, tag=tag)
     click.echo(f"Image pushed {config['link']}:{config['version']}")
+
+
+def deploy(address: str, config_path: Path):
+    """
+    Deploy model to the visionhub platform
+    """
+
+    try:
+        with open(f".visionhub/{address.split('://')[1]}", "r") as f:
+            token = f.read().split(",")[1]
+    except FileNotFoundError as exc:
+        raise ValueError(
+            "You are not loggined. Firstly you should call visionhub-cli login"
+        ) from exc
+
+    config = read_config(config_path)
+
+    data = {}
+    files = {}
+    for field in config:
+        if isinstance(config[field], str) and os.path.isfile(config[field]):
+            files[field] = open(config[field], "rb")
+        elif field == "link":
+            data[field] = config[field] + config["version"]
+        else:
+            data[field] = config[field]
+
+    data.pop("version")
+    data["supported_modes"] = data.pop("modes")
+
+    response = requests.get(
+        address + f"/api/frontend/model/{data['slug']}/",
+        headers={"Authorization": "Token " + token},
+    )
+    is_create = response.status_code == 404
+    method = "post" if is_create else "patch"
+    uri = (
+        address + "/api/frontend/model/" + ("" if is_create else data.pop("slug") + "/")
+    )
+    response = requests.request(
+        method,
+        uri,
+        data=data,
+        files=files,
+        headers={"Authorization": "Token " + token},
+    )
+    if response.status_code not in (201, 200):
+        raise ValueError(response.json())
+    click.echo(f"Deployet at {address}/api/frontend/model/{config['slug']}")

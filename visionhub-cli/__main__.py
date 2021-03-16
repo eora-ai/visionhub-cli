@@ -21,7 +21,7 @@ def main():
 
 @main.command()
 @click.option("-t", "--token", "token")
-@click.option("-a", "--address", "address")
+@click.option("-a", "--address")
 def login(token: Optional[str], address: str = "https://api.visionhub.ru"):
     """
     This command request a token, check it and save it to ~/.visionhub-cli/tokens
@@ -31,7 +31,6 @@ def login(token: Optional[str], address: str = "https://api.visionhub.ru"):
     else:
         token = click.prompt("Token", type=str)
     controllers.login(token, address)
-
 
 
 @main.command()
@@ -46,7 +45,7 @@ def create(config_file: str):
 @main.command()
 @click.argument("directory", required=False, default=".")
 @click.argument("config_file", required=False, default=".visionhub/model.yaml")
-@click.option("-a", "--address", "Visionhub address")
+@click.option("-a", "--address")
 def release(directory: Optional[str], config_file: Optional[str]):
     """
     Build model and push results to the docker registry
@@ -65,6 +64,7 @@ def build(directory: Optional[str], config_file: Optional[str]):
     except ValueError as e:
         click.echo(str(e))
 
+
 @main.command()
 @click.argument("config_file", required=False, default=".visionhub/model.yaml")
 def push(config_file: Optional[str]):
@@ -79,11 +79,12 @@ def push(config_file: Optional[str]):
 
 @main.command()
 @click.argument("config_file", required=False, default=".visionhub/model.yaml")
-@click.option("-a", "--address", "Visionhub address")
-def deploy(config_file: Optional[str]):
+@click.option("-a", "--address", default="https://api.visionhub.ru")
+def deploy(config_file: Optional[str], address: str):
     """
     Deploy model to the visionhub platform
     """
+    controllers.deploy(address, Path(config_file))
 
 
 if __name__ == "__main__":
