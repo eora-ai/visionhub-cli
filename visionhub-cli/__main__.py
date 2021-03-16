@@ -45,11 +45,14 @@ def create(config_file: str):
 @main.command()
 @click.argument("directory", required=False, default=".")
 @click.argument("config_file", required=False, default=".visionhub/model.yaml")
-@click.option("-a", "--address")
-def release(directory: Optional[str], config_file: Optional[str]):
+@click.option("-a", "--address", default="https://api.visionhub.ru")
+def release(address: str, directory: Optional[str], config_file: Optional[str]):
     """
     Build model and push results to the docker registry
     """
+    controllers.build(Path(directory), Path(config_file))
+    controllers.push(Path(config_file))
+    controllers.deploy(address, Path(config_file))
 
 
 @main.command()
@@ -59,10 +62,7 @@ def build(directory: Optional[str], config_file: Optional[str]):
     """
     Build model using `docker build`
     """
-    try:
-        controllers.build(Path(directory), Path(config_file))
-    except ValueError as e:
-        click.echo(str(e))
+    controllers.build(Path(directory), Path(config_file))
 
 
 @main.command()
@@ -71,10 +71,7 @@ def push(config_file: Optional[str]):
     """
     Push model to the docker registry
     """
-    try:
-        controllers.push(Path(config_file))
-    except ValueError as e:
-        click.echo(str(e))
+    controllers.push(Path(config_file))
 
 
 @main.command()

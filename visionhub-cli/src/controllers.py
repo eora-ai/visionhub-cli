@@ -15,8 +15,10 @@ from .config_processor import (
     write_config,
     Field,
 )
+from .utils import exception_handler
 
 
+@exception_handler
 def login(token: str, address: str):
     """
     Check token, save to ~/.visionhub/tokens
@@ -34,6 +36,7 @@ def login(token: str, address: str):
         f.write(f"{address},{token}")
 
 
+@exception_handler
 def create(result_config_path: Path):
     """
     Request required fields from user to create config
@@ -62,6 +65,7 @@ def create(result_config_path: Path):
     write_config(result_config_path, fields)
 
 
+@exception_handler
 def build(directory: Path, config_path: Path):
     """
     Build docker image and tag it with config["slug"] and version config["version"]
@@ -83,6 +87,7 @@ def build(directory: Path, config_path: Path):
     click.echo(f"Built image and tagged {config['link']}:{config['version']}")
 
 
+@exception_handler
 def push(config_path: Path):
     """
     Push image that to registry
@@ -102,6 +107,7 @@ def push(config_path: Path):
     click.echo(f"Image pushed {config['link']}:{config['version']}")
 
 
+@exception_handler
 def deploy(address: str, config_path: Path):
     """
     Deploy model to the visionhub platform
@@ -110,10 +116,10 @@ def deploy(address: str, config_path: Path):
     try:
         with open(f".visionhub/{address.split('://')[1]}", "r") as f:
             token = f.read().split(",")[1]
-    except FileNotFoundError as exc:
+    except FileNotFoundError:
         raise ValueError(
             "You are not loggined. Firstly you should call visionhub-cli login"
-        ) from exc
+        )
 
     config = read_config(config_path)
 
