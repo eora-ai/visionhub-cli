@@ -71,6 +71,10 @@ def push(config_file: Optional[str]):
     """
     Push model to the docker registry
     """
+    try:
+        controllers.push(Path(config_file))
+    except ValueError as e:
+        click.echo(str(e))
 
 
 @main.command()

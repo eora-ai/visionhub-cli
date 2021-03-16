@@ -68,10 +68,31 @@ def build(directory: Path, config_path: Path):
     if "slug" not in config or "version" not in config:
         raise ValueError("Config must contain slug and version fields")
 
-    cli = docker.APIClient(base_url='unix://var/run/docker.sock')
+    cli = docker.from_env().api
     filepath = directory / "Dockerfile"
     fileobj = open(filepath, "rb")
-    for response in cli.build(fileobj=fileobj, tag=config["link"] + ":" + config["version"], decode=True):
+    for response in cli.build(
+        fileobj=fileobj, tag=config["link"] + ":" + config["version"], decode=True
+    ):
         if "stream" in response and response["stream"] != "\n":
             click.echo(response["stream"])
     click.echo(f"Built image and tagged {config['link']}:{config['version']}")
+
+
+def push(config_path: Path):
+    """
+    Push image that to registry
+    """
+
+    cli = docker.from_env()
+
+    config = read_config(config_path)
+    if "slug" not in config or "version" not in config:
+        raise ValueError("Config must contain slug and version fields")
+
+    repository = config["link"]
+    tag = config["version"]
+
+    click.echo("Pushing...")
+    cli.images.push(repository, tag=tag)
+    click.echo(f"Image pushed {config['link']}:{config['version']}")
