@@ -112,3 +112,8 @@ def write_config(config_path: Path, fields: List[Field]):
 
     with open(config_path, "w") as config_file:
         yaml.dump(fields_dict, config_file, sort_keys=False)
+
+def read_config(config_path: Path) -> dict:
+    with open(config_path, "r") as config_file:
+        config = yaml.full_load(config_file)
+    return config

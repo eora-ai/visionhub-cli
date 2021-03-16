@@ -60,7 +60,10 @@ def build(directory: Optional[str], config_file: Optional[str]):
     """
     Build model using `docker build`
     """
-
+    try:
+        controllers.build(Path(directory), Path(config_file))
+    except ValueError as e:
+        click.echo(str(e))
 
 @main.command()
 @click.argument("config_file", required=False, default=".visionhub/model.yaml")
