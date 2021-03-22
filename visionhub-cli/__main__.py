@@ -21,7 +21,7 @@ def main():
 
 @main.command()
 @click.option("-t", "--token", "token")
-@click.option("-a", "--address")
+@click.option("-a", "--address", default="https://api.visionhub.ru")
 def login(token: Optional[str], address: str = "https://api.visionhub.ru"):
     """
     This command request a token, check it and save it to ~/.visionhub-cli/tokens
