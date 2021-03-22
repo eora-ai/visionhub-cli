@@ -142,9 +142,7 @@ def deploy(address: str, config_path: Path):
     )
     is_create = response.status_code == 404
     method = "post" if is_create else "patch"
-    uri = (
-        address + "/api/frontend/model/" + ("" if is_create else data.pop("slug") + "/")
-    )
+    uri = address + "/api/frontend/model/" + ("" if is_create else data["slug"] + "/")
     response = requests.request(
         method,
         uri,
@@ -154,4 +152,7 @@ def deploy(address: str, config_path: Path):
     )
     if response.status_code not in (201, 200):
         raise ValueError(response.json())
+
+    for _file in files.values():
+        _file.close()
     click.echo(f"Deployet at {address}/api/frontend/model/{config['slug']}")
