@@ -63,9 +63,9 @@ class ModelConfig(BaseModel):
         description="Link to docker address",
         completion=link_completion,
     )
-    supported_modes: List[Modes] = Field(
+    modes: List[Modes] = Field(
         required=True,
-        alias="modes",
+        alias="supported_modes",
         description="multiple of [IMG2IMG, IMG2VID, VID2IMG, VID2VID], separated by comma",
         parse_str=lambda x: x.split(","),
     )
@@ -208,4 +208,4 @@ def write_config(result_config_path: Path, model_config: ModelConfig):
 def read_config(config_path: Path) -> ModelConfig:
     with open(config_path, "r") as file_:
         model_dict = yaml.full_load(file_)
-        return ModelConfig(**model_dict)
+        return ModelConfig(**model_dict, alias=True)

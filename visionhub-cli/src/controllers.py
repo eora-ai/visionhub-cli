@@ -129,7 +129,7 @@ def deploy(address: str, config_path: Path):
 
     config = read_config(config_path)
 
-    data = config.dict()
+    data = config.dict(by_alias=True)
     files = {}
     for field in config.dict():
         if isinstance(data[field], str) and os.path.isfile(data[field]):
