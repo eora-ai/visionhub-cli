@@ -61,12 +61,35 @@ def build(directory: Path, config_path: Path):
     except docker.errors.DockerException:
         click.echo("You should start docker firstly")
         return
-    filepath = directory / "Dockerfile"
-    fileobj = open(filepath, "rb")
-    for response in cli.build(fileobj=fileobj, tag=config.link, decode=True):
+    for response in cli.build(path=str(directory), tag=config.link, decode=True):
         if "stream" in response and response["stream"] != "\n":
             click.echo(response["stream"])
     click.echo(f"Built image and tagged {config.link} 📦")
+
+
+@exception_handler
+def test(config_path: Path):
+    config = read_config(config_path)
+    link = config.link
+    try:
+        cli = docker.from_env()
+    except docker.errors.DockerException:
+        click.echo("You should start docker firstly")
+        return
+    try:
+        logs = cli.containers.run(
+            image=link,
+            detach=False,
+            stderr=True,
+            environment={"TEST_MODE": 1, "BATCH_SIZE": 1},
+        )
+    except docker.errors.ContainerError as e:
+        click.echo("Container return error 😵")
+        click.echo(e.stderr)
+        return
+
+    click.echo(logs)
+    click.echo("Test passed ✅")
 
 
 @exception_handler

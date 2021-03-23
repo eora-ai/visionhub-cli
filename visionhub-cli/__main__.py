@@ -67,6 +67,15 @@ def build(directory: Optional[str], config_file: Optional[str]):
 
 @main.command()
 @click.argument("config_file", required=False, default=".visionhub/model.yaml")
+def test(config_file: Optional[str]):
+    """
+    Build model using `docker build`
+    """
+    controllers.test(Path(config_file))
+
+
+@main.command()
+@click.argument("config_file", required=False, default=".visionhub/model.yaml")
 def push(config_file: Optional[str]):
     """
     Push model to the docker registry
