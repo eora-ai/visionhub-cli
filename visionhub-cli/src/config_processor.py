@@ -94,21 +94,25 @@ class ModelConfig(BaseModel):
         required=False,
         description="Cost of one image",
         check_need_func=check_need("IMG2IMG"),
+        default_if_needed=1,
     )
     cost_for_image_to_video: Optional[float] = Field(
         required=False,
         description="Cost of one image that will converted to video",
         check_need_func=check_need("IMG2VID"),
+        default_if_needed=10,
     )
     cost_for_video_to_image: Optional[float] = Field(
         required=False,
         description="Cost of one second of video that will converted to image",
         check_need_func=check_need("VID2IMG"),
+        default_if_needed=10,
     )
     cost_for_video_to_video: Optional[float] = Field(
         required=False,
         description="Cost of one second of video",
         check_need_func=check_need("VDI2VID"),
+        default_if_needed=10,
     )
     without_meta: bool = Field(
         required=True,
@@ -153,6 +157,8 @@ def model_field_prompt(model_field: ModelField, ctx: dict) -> Any:
         check_need_func = model_field.field_info.extra["check_need_func"]
         if not check_need_func(ctx):
             raise FieldNotNeeded(model_field)
+    if "default_if_needed" in model_field.field_info.extra:
+        return model_field.field_info.extra["default_if_needed"]
     completion = lambda ctx, x: x
     if "completion" in model_field.field_info.extra:
         completion = model_field.field_info.extra["completion"]
