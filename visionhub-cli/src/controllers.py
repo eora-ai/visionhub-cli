@@ -66,7 +66,7 @@ def build(directory: Path, config_path: Path):
     for response in cli.build(fileobj=fileobj, tag=config.link, decode=True):
         if "stream" in response and response["stream"] != "\n":
             click.echo(response["stream"])
-    click.echo(f"Built image and tagged {config.link}")
+    click.echo(f"Built image and tagged {config.link} 📦")
 
 
 @exception_handler
@@ -86,7 +86,7 @@ def push(config_path: Path):
 
     click.echo("Pushing...")
     cli.images.push(repository, tag=tag)
-    click.echo(f"Image pushed {config.link}")
+    click.echo(f"Image pushed {config.link} 🚀")
 
 
 @exception_handler
