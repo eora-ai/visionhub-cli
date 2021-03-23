@@ -15,6 +15,7 @@ from .config_processor import (
     write_config,
     Field,
 )
+from .pydantic_config_processor import construct_model_config_from_prompt
 from .utils import exception_handler
 
 
@@ -41,28 +42,32 @@ def create(result_config_path: Path):
     """
     Request required fields from user to create config
     """
-    field_templates = read_field_templates(
-        Path("visionhub-cli/src/config-template.yaml")
-    )
-    fields = []
-    for field_template in field_templates:
-        if field_template.required and field_template.default is None:
-            value = click.prompt(field_template.description, type=str)
-        else:
-            value = click.prompt(
-                field_template.description,
-                type=str,
-                default=field_template.default
-                if field_template.default is not None
-                else "",
-            )
 
-        if value == "":
-            continue
+    model_config = construct_model_config_from_prompt()
 
-        fields += [Field.parse_string(field_template, value)]
 
-    write_config(result_config_path, fields)
+#    field_templates = read_field_templates(
+#        Path("visionhub-cli/src/config-template.yaml")
+#    )
+#    fields = []
+#    for field_template in field_templates:
+#        if field_template.required and field_template.default is None:
+#            value = click.prompt(field_template.description, type=str)
+#        else:
+#            value = click.prompt(
+#                field_template.description,
+#                type=str,
+#                default=field_template.default
+#                if field_template.default is not None
+#                else "",
+#            )
+#
+#        if value == "":
+#            continue
+#
+#        fields += [Field.parse_string(field_template, value)]
+#
+#    write_config(result_config_path, fields)
 
 
 @exception_handler
