@@ -63,8 +63,9 @@ class ModelConfig(BaseModel):
         description="Link to docker address",
         completion=link_completion,
     )
-    modes: List[Modes] = Field(
+    supported_modes: List[Modes] = Field(
         required=True,
+        alias="modes",
         description="multiple of [IMG2IMG, IMG2VID, VID2IMG, VID2VID], separated by comma",
         parse_str=lambda x: x.split(","),
     )
