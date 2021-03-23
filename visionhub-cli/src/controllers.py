@@ -9,7 +9,7 @@ import requests
 import docker
 import click
 
-from .pydantic_config_processor import (
+from .config_processor import (
     construct_model_config_from_prompt,
     write_config,
     read_config,
