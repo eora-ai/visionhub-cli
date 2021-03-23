@@ -9,7 +9,11 @@ import requests
 import docker
 import click
 
-from .pydantic_config_processor import construct_model_config_from_prompt, write_config
+from .pydantic_config_processor import (
+    construct_model_config_from_prompt,
+    write_config,
+    read_config,
+)
 from .utils import exception_handler
 
 
@@ -41,30 +45,6 @@ def create(result_config_path: Path):
     write_config(result_config_path, model_config)
 
 
-#    field_templates = read_field_templates(
-#        Path("visionhub-cli/src/config-template.yaml")
-#    )
-#    fields = []
-#    for field_template in field_templates:
-#        if field_template.required and field_template.default is None:
-#            value = click.prompt(field_template.description, type=str)
-#        else:
-#            value = click.prompt(
-#                field_template.description,
-#                type=str,
-#                default=field_template.default
-#                if field_template.default is not None
-#                else "",
-#            )
-#
-#        if value == "":
-#            continue
-#
-#        fields += [Field.parse_string(field_template, value)]
-#
-#    write_config(result_config_path, fields)
-
-
 @exception_handler
 def build(directory: Path, config_path: Path):
     """
@@ -73,18 +53,20 @@ def build(directory: Path, config_path: Path):
 
     config = read_config(config_path)
 
-    if "slug" not in config or "version" not in config:
-        raise ValueError("Config must contain slug and version fields")
+    if not config.slug or not config.link:
+        raise ValueError("Config must contain slug and link")
 
-    cli = docker.from_env().api
+    try:
+        cli = docker.from_env().api
+    except docker.errors.DockerException:
+        click.echo("You should start docker firstly")
+        return
     filepath = directory / "Dockerfile"
     fileobj = open(filepath, "rb")
-    for response in cli.build(
-        fileobj=fileobj, tag=config["link"] + ":" + config["version"], decode=True
-    ):
+    for response in cli.build(fileobj=fileobj, tag=config.link, decode=True):
         if "stream" in response and response["stream"] != "\n":
             click.echo(response["stream"])
-    click.echo(f"Built image and tagged {config['link']}:{config['version']}")
+    click.echo(f"Built image and tagged {config.link}")
 
 
 @exception_handler

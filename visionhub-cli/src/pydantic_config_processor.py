@@ -196,3 +196,9 @@ def write_config(result_config_path: Path, model_config: ModelConfig):
     with open(result_config_path, "w") as file_:
         yaml.dump(model_config_dict, file_)
         click.echo(f"Config writed to {result_config_path}")
+
+
+def read_config(config_path: Path) -> ModelConfig:
+    with open(config_path, "r") as file_:
+        model_dict = yaml.full_load(file_)
+        return ModelConfig(**model_dict)
