@@ -9,13 +9,7 @@ import requests
 import docker
 import click
 
-from .config_processor import (
-    read_field_templates,
-    read_config,
-    write_config,
-    Field,
-)
-from .pydantic_config_processor import construct_model_config_from_prompt
+from .pydantic_config_processor import construct_model_config_from_prompt, write_config
 from .utils import exception_handler
 
 
@@ -44,6 +38,7 @@ def create(result_config_path: Path):
     """
 
     model_config = construct_model_config_from_prompt()
+    write_config(result_config_path, model_config)
 
 
 #    field_templates = read_field_templates(
