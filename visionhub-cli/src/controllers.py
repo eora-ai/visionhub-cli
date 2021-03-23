@@ -68,7 +68,7 @@ def build(directory: Path, config_path: Path):
 
 
 @exception_handler
-def test(config_path: Path):
+def test(config_path: Path) -> bool:
     config = read_config(config_path)
     link = config.link
     try:
@@ -86,10 +86,11 @@ def test(config_path: Path):
     except docker.errors.ContainerError as e:
         click.echo("Container return error 😵")
         click.echo(e.stderr)
-        return
+        return False
 
     click.echo(logs)
     click.echo("Test passed ✅")
+    return True
 
 
 @exception_handler
