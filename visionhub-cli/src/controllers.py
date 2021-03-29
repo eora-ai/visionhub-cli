@@ -10,10 +10,9 @@ import docker
 import click
 
 from .config_processor import (
-    read_field_templates,
-    read_config,
+    construct_model_config_from_prompt,
     write_config,
-    Field,
+    read_config,
 )
 from .utils import exception_handler
 
@@ -41,28 +40,9 @@ def create(result_config_path: Path):
     """
     Request required fields from user to create config
     """
-    field_templates = read_field_templates(
-        Path("visionhub-cli/src/config-template.yaml")
-    )
-    fields = []
-    for field_template in field_templates:
-        if field_template.required and field_template.default is None:
-            value = click.prompt(field_template.description, type=str)
-        else:
-            value = click.prompt(
-                field_template.description,
-                type=str,
-                default=field_template.default
-                if field_template.default is not None
-                else "",
-            )
 
-        if value == "":
-            continue
-
-        fields += [Field.parse_string(field_template, value)]
-
-    write_config(result_config_path, fields)
+    model_config = construct_model_config_from_prompt()
+    write_config(result_config_path, model_config)
 
 
 @exception_handler
@@ -73,18 +53,44 @@ def build(directory: Path, config_path: Path):
 
     config = read_config(config_path)
 
-    if "slug" not in config or "version" not in config:
-        raise ValueError("Config must contain slug and version fields")
+    if not config.slug or not config.link:
+        raise ValueError("Config must contain slug and link")
 
-    cli = docker.from_env().api
-    filepath = directory / "Dockerfile"
-    fileobj = open(filepath, "rb")
-    for response in cli.build(
-        fileobj=fileobj, tag=config["link"] + ":" + config["version"], decode=True
-    ):
+    try:
+        cli = docker.from_env().api
+    except docker.errors.DockerException:
+        click.echo("You should start docker firstly")
+        return
+    for response in cli.build(path=str(directory), tag=config.link, decode=True):
         if "stream" in response and response["stream"] != "\n":
             click.echo(response["stream"])
-    click.echo(f"Built image and tagged {config['link']}:{config['version']}")
+    click.echo(f"Built image and tagged {config.link} 📦")
+
+
+@exception_handler
+def test(config_path: Path) -> bool:
+    config = read_config(config_path)
+    link = config.link
+    try:
+        cli = docker.from_env()
+    except docker.errors.DockerException:
+        click.echo("You should start docker firstly")
+        return
+    try:
+        logs = cli.containers.run(
+            image=link,
+            detach=False,
+            stderr=True,
+            environment={"TEST_MODE": 1, "BATCH_SIZE": 1},
+        )
+    except docker.errors.ContainerError as e:
+        click.echo("Container return error 😵")
+        click.echo(e.stderr)
+        return False
+
+    click.echo(logs)
+    click.echo("Test passed ✅")
+    return True
 
 
 @exception_handler
@@ -96,15 +102,15 @@ def push(config_path: Path):
     cli = docker.from_env()
 
     config = read_config(config_path)
-    if "slug" not in config or "version" not in config:
-        raise ValueError("Config must contain slug and version fields")
+    if not config.slug or not config.link:
+        raise ValueError("Config must contain slug and link fields")
 
-    repository = config["link"]
-    tag = config["version"]
+    repository = config.link.split(":")[0]
+    tag = config.link.split(":")[1]
 
     click.echo("Pushing...")
     cli.images.push(repository, tag=tag)
-    click.echo(f"Image pushed {config['link']}:{config['version']}")
+    click.echo(f"Image pushed {config.link} 🚀")
 
 
 @exception_handler
@@ -123,26 +129,29 @@ def deploy(address: str, config_path: Path):
 
     config = read_config(config_path)
 
-    data = {}
+    data = config.dict(by_alias=True)
     files = {}
-    for field in config:
-        if isinstance(config[field], str) and os.path.isfile(config[field]):
-            files[field] = open(config[field], "rb")
-        elif field == "link":
-            data[field] = config[field] + config["version"]
-        else:
-            data[field] = config[field]
+    for field in config.dict():
+        if isinstance(data[field], str) and os.path.isfile(data[field]):
+            files[field] = open(data.pop(field), "rb")
+
+    for field in config.dict():
+        if isinstance(data[field], Path) and os.path.isfile(data[field]):
+            files[field] = open(data[field], "rb")
+        if field == "supported_modes":
+            data[field] = list(map(lambda x: x.value, data[field]))
 
     data.pop("version")
-    data["supported_modes"] = data.pop("modes")
 
+    click.echo("Check is model is already deployet")
     response = requests.get(
-        address + f"/api/frontend/model/{data['slug']}/",
+        address + f"/api/frontend/model/{config.slug}/",
         headers={"Authorization": "Token " + token},
     )
     is_create = response.status_code == 404
+    click.echo(f"Model is presented in visionhub platform {not is_create}")
     method = "post" if is_create else "patch"
-    uri = address + "/api/frontend/model/" + ("" if is_create else data["slug"] + "/")
+    uri = address + "/api/frontend/model/" + ("" if is_create else config.slug + "/")
     response = requests.request(
         method,
         uri,
@@ -151,8 +160,14 @@ def deploy(address: str, config_path: Path):
         headers={"Authorization": "Token " + token},
     )
     if response.status_code not in (201, 200):
-        raise ValueError(response.json())
+        try:
+            json = response.json()
+            raise ValueError(response.json())
+        except Exception:
+            with open(".visionhub/log", "ab") as file_:
+                file_.write(response.content)
+            raise ValueError("Visionhub returns error writed to .visionhub/log")
 
     for _file in files.values():
         _file.close()
-    click.echo(f"Deployet at {address}/api/frontend/model/{config['slug']}")
+    click.echo(f"Deployet at {address}/api/frontend/model/{config.slug} 🚀")
