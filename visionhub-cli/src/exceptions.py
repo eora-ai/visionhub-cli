@@ -1,0 +1,2 @@
+class FieldNotNeeded(Exception):
+    pass
