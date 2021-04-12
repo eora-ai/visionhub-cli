@@ -129,7 +129,7 @@ def deploy(address: str, config_path: Path):
 
     config = read_config(config_path)
 
-    data = config.dict(by_alias=True)
+    data = config.dict()
     files = {}
     for field in config.dict():
         if isinstance(data[field], str) and os.path.isfile(data[field]):
@@ -142,6 +142,7 @@ def deploy(address: str, config_path: Path):
             data[field] = list(map(lambda x: x.value, data[field]))
 
     data.pop("version")
+    data["supported_modes"] = data["modes"]
 
     click.echo("Check is model is already deployet")
     response = requests.get(
