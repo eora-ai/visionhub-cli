@@ -1,0 +1,12 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "visionhub_cli"
+author = "Andrey Chertkov"
+author-email = "a.chertkov@eora.ru"
+home-page = "https://github.com/eora-ai/visionhub-cli"
+classifiers = [ "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",]
+description-file = "README.md"
+
