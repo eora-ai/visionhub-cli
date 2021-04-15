@@ -1,9 +1,10 @@
 [tool.poetry]
 name = "visionhub-cli"
-version = "0.2.7"
+version = "0.2.8"
 description = "Console client for www.visionhub.ru platform"
 authors = ["Andrey Chertkov <andreychertckov@yandex.ru>"]
 license = "GPL-3.0"
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
