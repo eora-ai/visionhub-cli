@@ -6,9 +6,9 @@ from pathlib import Path
 
 import click
 
-import src.controllers as controllers
+from .src import controllers
 
-VERSION = "0.0.1"
+VERSION = "0.2.7"
 
 
 @click.group()
