@@ -130,3 +130,6 @@ dmypy.json
 
 # Visionhub
 .visionhub
+
+# .env
+.envrc
