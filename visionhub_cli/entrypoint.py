@@ -31,6 +31,7 @@ def login(token: Optional[str], address: str = "https://api.visionhub.ru"):
     else:
         token = click.prompt("Token", type=str)
     controllers.login(token, address)
+    click.echo("You are loggeed in. Now you can use VisionHub 🔓")
 
 
 @main.command()
@@ -40,6 +41,7 @@ def create(config_file: str):
     Make configuration file for release
     """
     controllers.create(Path(config_file))
+    click.echo("Configuration file is created 😉")
 
 
 @main.command()
