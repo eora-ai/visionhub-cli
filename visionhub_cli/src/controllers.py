@@ -63,7 +63,7 @@ def build(directory: Path, config_path: Path):
         return
     for response in cli.build(path=str(directory), tag=config.link, decode=True):
         if "stream" in response and response["stream"] != "\n":
-            click.echo(response["stream"])
+            click.echo(response["stream"].replace("\n", ""))
     click.echo(f"Built image and tagged {config.link} 📦")
 
 
