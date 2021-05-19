@@ -62,8 +62,13 @@ def build(directory: Path, config_path: Path):
         click.echo("You should start docker firstly")
         return
     for response in cli.build(path=str(directory), tag=config.link, decode=True):
+        
         if "stream" in response and response["stream"] != "\n":
             click.echo(response["stream"].replace("\n", ""))
+        if "error" in response:
+            click.echo(response["error"])
+            click.echo("Can not build image 😭")
+            return
     click.echo(f"Built image and tagged {config.link} 📦")
 
 
