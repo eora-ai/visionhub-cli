@@ -11,6 +11,7 @@ import click
 
 from .config_processor import (
     construct_model_config_from_prompt,
+    construct_model_config,
     write_config,
     read_config,
 )
@@ -46,6 +47,15 @@ def create(result_config_path: Path):
 
 
 @exception_handler
+def generate_template(result_config_path: Path):
+    """
+    Generate template with stub values
+    """
+    model_config = construct_model_config()
+    write_config(result_config_path, model_config)
+
+
+@exception_handler
 def build(directory: Path, config_path: Path):
     """
     Build docker image and tag it with config["slug"] and version config["version"]
@@ -62,7 +72,7 @@ def build(directory: Path, config_path: Path):
         click.echo("You should start docker firstly")
         return
     for response in cli.build(path=str(directory), tag=config.link, decode=True):
-        
+
         if "stream" in response and response["stream"] != "\n":
             click.echo(response["stream"].replace("\n", ""))
         if "error" in response:

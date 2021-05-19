@@ -43,6 +43,14 @@ def create(config_file: str):
     controllers.create(Path(config_file))
     click.echo("Configuration file is created 😉")
 
+@main.command()
+@click.argument("config_file", required=False, default=".visionhub/model.yaml")
+def generate_template(config_file: str):
+    """
+    Make configuration file for release
+    """
+    controllers.generate_template(Path(config_file))
+    click.echo("Configuration template file is created 😉")
 
 @main.command()
 @click.argument("directory", required=False, default=".")

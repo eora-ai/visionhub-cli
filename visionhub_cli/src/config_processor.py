@@ -186,6 +186,24 @@ def construct_model_config_from_prompt() -> ModelConfig:
     return ModelConfig(**ctx["inputs"])
 
 
+def construct_model_config() -> ModelConfig:
+    stub_data = {
+        "slug": "<SLUG>",
+        "name": "<MODEL NAME>",
+        "description": "<YOUR DESCRIPTION>",
+        "anons": "<SHORT DESCRIPTION OF MODEL>",
+        "link": "public.registry.visionhub.ru/models/<SLUG>:<VERSION>",
+        "modes": ["IMG2IMG", "VID2VID", "IMG2VID", "VID2IMG"],
+        "preview": "https://static.tildacdn.com/tild3034-6135-4638-b137-653464613933/logo-white.svg",
+        "without_meta": True,
+        "is_private": False,
+        "gpu": False,
+        "batch_size": 128,
+        "prediction_example": '{"finished": true}',
+    }
+    return ModelConfig(**stub_data)
+
+
 def write_config(result_config_path: Path, model_config: ModelConfig):
     model_config_dict = model_config.dict()
     model_config_dict = {
