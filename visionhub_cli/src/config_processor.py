@@ -56,7 +56,7 @@ class ModelConfig(BaseModel):
         description="Path to the md file with documentation",
     )
     version: str = Field(
-        required=False, default="v4", description="Version of the model"
+        required=False, default="v5", description="Version of the model"
     )
     link: str = Field(
         required=False,
@@ -115,7 +115,7 @@ class ModelConfig(BaseModel):
     )
     without_meta: bool = Field(
         required=True,
-        description="Can be run without meta",
+        description="Is able to run without meta",
         parse_str=lambda x: x == "y",
     )
     is_private: bool = Field(

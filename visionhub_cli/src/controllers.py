@@ -53,8 +53,8 @@ def build(directory: Path, config_path: Path):
 
     config = read_config(config_path)
 
-    if not config.slug or not config.link:
-        raise ValueError("Config must contain slug and link")
+    if not config.slug:
+        raise ValueError("Config must contain slug name")
 
     try:
         cli = docker.from_env().api
@@ -137,6 +137,7 @@ def deploy(address: str, config_path: Path):
 
     for field in config.dict():
         if isinstance(data[field], Path) and os.path.isfile(data[field]):
+            # TODO: close files
             files[field] = open(data[field], "rb")
         if field == "supported_modes":
             data[field] = list(map(lambda x: x.value, data[field]))
@@ -144,7 +145,7 @@ def deploy(address: str, config_path: Path):
     data.pop("version")
     data["supported_modes"] = data["modes"]
 
-    click.echo("Check is model is already deployet")
+    click.echo("Check is model is already deployed")
     response = requests.get(
         address + f"/api/frontend/model/{config.slug}/",
         headers={"Authorization": "Token " + token},
