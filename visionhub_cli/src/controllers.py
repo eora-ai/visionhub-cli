@@ -11,6 +11,7 @@ import click
 
 from .config_processor import (
     construct_model_config_from_prompt,
+    construct_model_config,
     write_config,
     read_config,
 )
@@ -46,6 +47,15 @@ def create(result_config_path: Path):
 
 
 @exception_handler
+def generate_template(result_config_path: Path):
+    """
+    Generate template with stub values
+    """
+    model_config = construct_model_config()
+    write_config(result_config_path, model_config)
+
+
+@exception_handler
 def build(directory: Path, config_path: Path):
     """
     Build docker image and tag it with config["slug"] and version config["version"]
@@ -53,8 +63,8 @@ def build(directory: Path, config_path: Path):
 
     config = read_config(config_path)
 
-    if not config.slug or not config.link:
-        raise ValueError("Config must contain slug and link")
+    if not config.slug:
+        raise ValueError("Config must contain slug name")
 
     try:
         cli = docker.from_env().api
@@ -62,8 +72,13 @@ def build(directory: Path, config_path: Path):
         click.echo("You should start docker firstly")
         return
     for response in cli.build(path=str(directory), tag=config.link, decode=True):
+
         if "stream" in response and response["stream"] != "\n":
-            click.echo(response["stream"])
+            click.echo(response["stream"].replace("\n", ""))
+        if "error" in response:
+            click.echo(response["error"])
+            click.echo("Can not build image 😭")
+            return
     click.echo(f"Built image and tagged {config.link} 📦")
 
 
@@ -137,6 +152,7 @@ def deploy(address: str, config_path: Path):
 
     for field in config.dict():
         if isinstance(data[field], Path) and os.path.isfile(data[field]):
+            # TODO: close files
             files[field] = open(data[field], "rb")
         if field == "supported_modes":
             data[field] = list(map(lambda x: x.value, data[field]))
@@ -144,7 +160,7 @@ def deploy(address: str, config_path: Path):
     data.pop("version")
     data["supported_modes"] = data["modes"]
 
-    click.echo("Check is model is already deployet")
+    click.echo("Check is model is already deployed")
     response = requests.get(
         address + f"/api/frontend/model/{config.slug}/",
         headers={"Authorization": "Token " + token},

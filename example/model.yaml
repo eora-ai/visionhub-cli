@@ -1,0 +1,52 @@
+# (str) Unique name of the model - it will be used for model URL, so don't use spaces, "/", etc.
+slug: "stub_public"
+# (str) Descriptive name of the model - it's displayed as a main name in the model's card
+name: "Stub Public"
+# (str) Short description of the model - it's displayed in the model's card under name
+anons: "Example model to show Vision Hub API"
+# (str) Long description of the model - it's displayed on the model's page
+description: "This model is able to put 'test text' message on an input image and 'test text' message along with the FPS value on frames of an input video."
+# (str) Path to complete model's documentation
+md_documentation: "README.md"
+# (str) Version of the Docker base image used as a parent image
+# [Optional] (str) You can specify a custom link to Docker image with your model. By default, it's constructed as
+# public.registry.visionhub.ru/models/{slug}:{version}
+link: "<path to Docker image with your model>"
+#link: "public.registry.visionhub.ru/models/stub_public:v5"
+version: "v5"
+# (List[str]) Processing modes which the model works in. Possible values are:
+#    - IMG2IMG: given image, produce one JSON output and optionally one drawn image
+#    - IMG2VID: given image, produce multiple JSON outputs and optionally an animation of multiple video+audio frames
+#    - VID2IMG: given video, produce one JSON output and optionally one drawn image
+#    - VID2VID: given video, produce multiple JSON outputs and optionally an animation of multiple video+audio frames
+modes: ["IMG2IMG", "VID2VID"]
+# (str) Path to model's preview image - it's displayed in the model's card
+preview: "assets/teapot.png"
+# (str) Path to model's input image example (in case IMG2* mode is supported) - it's displayed on the model's page
+image_input_example: "assets/input1.jpg"
+# (str) Path to model's output image example (in case *2IMG mode is supported) - it's displayed on the model's page
+image_output_example: "assets/output1.jpg"
+# (str) Path to model's input video example (in case VID2* mode is supported) - it's displayed on the model's page
+video_input_example: "assets/input1.mp4"
+# (str) Path to model's output video example (in case *2VID mode is supported) - it's displayed on the model's page
+video_output_example: "assets/output1.mp4"
+# (bool) Indicator of whether the model is able to run without meta parameters passed
+# (used to know whether it's can be called from the basic Frontend UI not having special forms for the parameters)
+without_meta: true
+# (str) Indicator of whether to make the model accessible by only a specified list of users
+# (needs admin access to edit access rights, so if you aren't admin don't set model to be private,
+# otherwise you will not see the model in the marketplace)
+is_private: false
+# (bool) Does the model require GPU for running?
+gpu: false
+# (int) Maximum batch size that can fit to 13Gb of GPU memory
+batch_size: 32
+# (str) JSON schema of meta parameters used to parameterize the model. The schema should follow general schema format
+# like https://json-schema.org. You can pass JSON string here or path where .json file is located
+meta_template: "{}"
+# (str) Example of meta parameters showing how to parameterize the model. Should be a JSON following schema
+# of meta_template. You can pass JSON string here or path where .json file is located
+meta_input_example: "{}"
+# (str) Example of a prediction produced for an input image or a video (in case of video
+# prediction for one frame only is needed). You can pass JSON string here or path where .json file is located
+prediction_example: "{}"
