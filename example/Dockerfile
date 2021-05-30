@@ -6,7 +6,7 @@ FROM public.registry.visionhub.ru/models/base:v5 AS base
 FROM ubuntu:18.04
 
 COPY . /app
-# workdir is already /app, so you don't need to change it
+WORKDIR /app
 
 RUN apt-get update && apt-get install -y libsm6 libxext6 libxrender-dev libglib2.0-0 ffmpeg && \
     apt-get install -y python3-pip && \
